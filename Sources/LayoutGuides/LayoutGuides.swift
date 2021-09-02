@@ -139,12 +139,11 @@ struct LayoutGuidesModifier: ViewModifier {
       }
 
       func updateLayoutMargins() {
-        let isRightToLeft = traitCollection.layoutDirection == .rightToLeft
         let edgeInsets = EdgeInsets(
-          top: layoutMargins.top,
-          leading: isRightToLeft ? layoutMargins.right : layoutMargins.left,
-          bottom: layoutMargins.bottom,
-          trailing: isRightToLeft ? layoutMargins.left : layoutMargins.right
+          top: directionalLayoutMargins.top,
+          leading: directionalLayoutMargins.leading,
+          bottom: directionalLayoutMargins.bottom,
+          trailing: directionalLayoutMargins.trailing
         )
         onLayoutMarginsGuideChange(edgeInsets)
       }
