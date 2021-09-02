@@ -28,24 +28,27 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 
 /// This view makes its content `View` fit the readable content width.
 ///
-/// If the content view is already smaller than the readable content width, it does nothing.
 /// - Note: This modifier is equivalent to calling ``.fitToReadableContentWidth()`` on the content view.
 public struct FitReadableContentWidth<Content>: View where Content: View {
+  let alignment: Alignment
   let content: () -> Content
-  public init(@ViewBuilder content: @escaping () -> Content) {
+  public init(alignment: Alignment = .center, @ViewBuilder content: @escaping () -> Content) {
+    self.alignment = alignment
     self.content = content
   }
 
   public var body: some View {
-    InsetContent(content: content)
+    InsetContent(alignment: alignment, content: content)
       .measureLayoutMargins()
   }
 
   private struct InsetContent: View {
+    let alignment: Alignment
     let content: () -> Content
     @Environment(\.readableContentInsets) var readableContentInsets
     var body: some View {
       content()
+        .frame(maxWidth: .infinity, alignment: alignment)
         .padding(.leading, readableContentInsets.leading)
         .padding(.trailing, readableContentInsets.trailing)
     }
@@ -55,11 +58,10 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 public extension View {
   /// Use this modifier to make the view fit the readable content width.
   ///
-  /// If the view is already smaller than the readable content width, it does nothing.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   /// - Note: This modifier is equivalent to wrapping the view inside a ``FitReadableContentWidth`` view.
-  func fitToReadableContentWidth() -> some View {
-    FitReadableContentWidth { self }
+  func fitToReadableContentWidth(alignment: Alignment = .center) -> some View {
+    FitReadableContentWidth(alignment: alignment) { self }
   }
   
   /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets`` for the target view.
