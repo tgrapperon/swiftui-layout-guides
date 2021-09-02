@@ -36,7 +36,7 @@ struct ScrollViewTest: View {
   }
 }
 
-struct LayoutGuides_Previews: PreviewProvider {
+struct SwiftUILayoutGuides_Previews: PreviewProvider {
   static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
   where Content: View {
     VStack(alignment: .leading) {
