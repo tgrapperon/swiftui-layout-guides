@@ -37,7 +37,7 @@ struct Content: View {
   }
 }
 ```
-These insets are only valid for the bounds of the root content view. Using them deeper in the hierachy may lead to insconsitent results.
+These insets are only valid for the bounds of the root content view. Using them deeper in the hierachy may lead to insconsitent results and you should use the  `measureLayoutMargins()` modifier if you want to refresh the insets for the target view.
 
 ## Installation
 Add `.package(url: "https://github.com/tgrapperon/swiftui-layout-guides", from: "0.0.1")` to your Package dependencies, and then 
