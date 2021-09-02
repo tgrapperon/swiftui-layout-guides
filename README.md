@@ -40,7 +40,7 @@ struct Content: View {
 These insets are only valid for the bounds of the root content view. Using them deeper in the hierachy may lead to insconsitent results.
 
 ## Installation
-Add `.package(url: "https://github.com/tgrapperon/swiftui-layout-guides", from: "0.0.2")` to your Package dependencies, and then 
+Add `.package(url: "https://github.com/tgrapperon/swiftui-layout-guides", from: "0.0.1")` to your Package dependencies, and then 
 ```
 .product(name: "SwiftUILayoutGuides", package: "swiftui-layout-guides")
 ```
