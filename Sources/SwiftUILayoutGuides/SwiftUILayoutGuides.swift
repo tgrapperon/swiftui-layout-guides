@@ -14,7 +14,7 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 
   public var body: some View {
     InsetContent(content: content)
-      .modifier(LayoutGuidesModifier())
+      .measureLayoutMargins()
   }
 
   private struct InsetContent: View {
@@ -38,7 +38,7 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 
   public var body: some View {
     InsetContent(content: content)
-      .modifier(LayoutGuidesModifier())
+      .measureLayoutMargins()
   }
 
   private struct InsetContent: View {
@@ -60,6 +60,13 @@ public extension View {
   /// - Note: This modifier is equivalent to wrapping the view inside a ``FitReadableContentWidth`` view.
   func fitToReadableContentWidth() -> some View {
     FitReadableContentWidth { self }
+  }
+  
+  /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets`` for the target view.
+  ///
+  /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
+  func measureLayoutMargins() -> some View {
+    modifier(LayoutGuidesModifier())
   }
 }
 
