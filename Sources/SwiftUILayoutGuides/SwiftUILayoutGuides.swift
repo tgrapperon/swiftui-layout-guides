@@ -31,10 +31,11 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 /// - Note: This modifier is equivalent to calling ``.fitToReadableContentWidth()`` on the content view.
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
-  let content: () -> Content
-  public init(alignment: Alignment = .center, @ViewBuilder content: @escaping () -> Content) {
+  let content: Content
+  
+  public init(alignment: Alignment = .center, @ViewBuilder content: () -> Content) {
     self.alignment = alignment
-    self.content = content
+    self.content = content()
   }
 
   public var body: some View {
@@ -44,10 +45,10 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 
   private struct InsetContent: View {
     let alignment: Alignment
-    let content: () -> Content
+    let content: Content
     @Environment(\.readableContentInsets) var readableContentInsets
     var body: some View {
-      content()
+      content
         .frame(maxWidth: .infinity, alignment: alignment)
         .padding(.leading, readableContentInsets.leading)
         .padding(.trailing, readableContentInsets.trailing)
