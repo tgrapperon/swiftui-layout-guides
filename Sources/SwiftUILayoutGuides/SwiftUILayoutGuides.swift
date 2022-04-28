@@ -4,10 +4,19 @@ import SwiftUI
 public struct WithLayoutMargins<Content>: View where Content: View {
   let content: (EdgeInsets) -> Content
 
+  /// Initialize a ``WithLayoutMargins`` view, populating its content's ``layoutMarginsInsets``
+  ///  and ``readableContentInsets``.
+  ///
+  /// - Parameter content: A closure that builds a `Content` view from the layout
+  /// margins provided in the form of an `EdgeInsets` argument.
   public init(@ViewBuilder content: @escaping (EdgeInsets) -> Content) {
     self.content = content
   }
 
+  /// Initialize a ``WithLayoutMargins`` view, populating  its content's ``layoutMarginsInsets``
+  /// and ``readableContentInsets``.
+  ///
+  /// - Parameter content: A closure that builds a `Content` view.
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = { _ in content() }
   }
@@ -28,12 +37,22 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 
 /// This view makes its content `View` fit the readable content width.
 ///
-/// - Note: This modifier is equivalent to calling ``.fitToReadableContentWidth()`` on the content view.
+/// - Note: This modifier is equivalent to calling ``.fitToReadableContentWidth()`` on
+/// the content view.
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
   
-  public init(alignment: Alignment = .center, @ViewBuilder content: () -> Content) {
+  /// Initialize some ``FitReadableContentWidth`` view.
+  ///
+  /// - Parameters:
+  ///   - alignment: The `Alignment` to use when `content`  is smaller than
+  /// the readable content width.
+  ///   - content:  The view that should fit the readable content width.
+  public init(
+    alignment: Alignment = .center,
+    @ViewBuilder content: () -> Content
+  ) {
     self.alignment = alignment
     self.content = content()
   }
@@ -59,6 +78,8 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 public extension View {
   /// Use this modifier to make the view fit the readable content width.
   ///
+  /// - Parameter alignment: The `Alignment` to use when the view is smaller than
+  /// the readable content width.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   /// - Note: This modifier is equivalent to wrapping the view inside a ``FitReadableContentWidth`` view.
   func fitToReadableContentWidth(alignment: Alignment = .center) -> some View {
