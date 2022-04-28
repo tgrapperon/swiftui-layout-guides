@@ -51,10 +51,12 @@ struct SwiftUILayoutGuides_Previews: PreviewProvider {
     VStack(spacing: 0) {
       sample("ScrollView") { ScrollViewTest() }
       sample("List.plain") { ListTest().listStyle(.plain) }
+      #if os(iOS) || os(tvOS)
       sample("List.grouped") { ListTest().listStyle(.grouped) }
       if #available(iOS 14.0, *) {
       sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
       }
+      #endif
     }
    .previewDevice("iPad Pro (11-inch) (3rd generation)")
   }
