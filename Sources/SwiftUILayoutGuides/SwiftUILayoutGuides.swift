@@ -155,6 +155,7 @@ struct LayoutGuidesModifier: ViewModifier {
         }
       }
 
+      var previousLayoutMargins: EdgeInsets? = nil
       func updateLayoutMargins() {
         let edgeInsets = EdgeInsets(
           top: directionalLayoutMargins.top,
@@ -162,9 +163,12 @@ struct LayoutGuidesModifier: ViewModifier {
           bottom: directionalLayoutMargins.bottom,
           trailing: directionalLayoutMargins.trailing
         )
+        guard previousLayoutMargins != edgeInsets else { return }
         onLayoutMarginsGuideChange(edgeInsets)
+        previousLayoutMargins = edgeInsets
       }
 
+      var previousReadableContentGuide: EdgeInsets? = nil
       func updateReadableContent() {
         let isRightToLeft = traitCollection.layoutDirection == .rightToLeft
         let layoutFrame = readableContentGuide.layoutFrame
@@ -182,7 +186,9 @@ struct LayoutGuidesModifier: ViewModifier {
           bottom: readableContentInsets.bottom,
           trailing: isRightToLeft ? readableContentInsets.left : readableContentInsets.right
         )
+        guard previousReadableContentGuide != edgeInsets else { return }
         onReadableContentGuideChange(edgeInsets)
+        previousReadableContentGuide = edgeInsets
       }
     }
   }
