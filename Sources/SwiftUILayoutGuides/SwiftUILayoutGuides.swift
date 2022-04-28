@@ -147,6 +147,13 @@ struct LayoutGuidesModifier: ViewModifier {
         super.layoutSubviews()
         updateReadableContent()
       }
+      
+      override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.layoutDirection != previousTraitCollection?.layoutDirection {
+          updateReadableContent()
+        }
+      }
 
       func updateLayoutMargins() {
         let edgeInsets = EdgeInsets(
