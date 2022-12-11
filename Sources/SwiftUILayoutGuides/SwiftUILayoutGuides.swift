@@ -42,7 +42,7 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
-  
+
   /// Initialize some ``FitReadableContentWidth`` view.
   ///
   /// - Parameters:
@@ -75,21 +75,23 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
   }
 }
 
-public extension View {
+extension View {
   /// Use this modifier to make the view fit the readable content width.
   ///
   /// - Parameter alignment: The `Alignment` to use when the view is smaller than
   /// the readable content width.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
-  /// - Note: This modifier is equivalent to wrapping the view inside a ``FitReadableContentWidth`` view.
-  func fitToReadableContentWidth(alignment: Alignment = .center) -> some View {
+  /// - Note: This modifier is equivalent to wrapping the view inside a
+  /// ``FitReadableContentWidth`` view.
+  public func fitToReadableContentWidth(alignment: Alignment = .center) -> some View {
     FitReadableContentWidth(alignment: alignment) { self }
   }
-  
-  /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets`` for the target view.
+
+  /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets``
+  /// for the target view.
   ///
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
-  func measureLayoutMargins() -> some View {
+  public func measureLayoutMargins() -> some View {
     modifier(LayoutGuidesModifier())
   }
 }
@@ -102,21 +104,23 @@ private struct ReadableContentGuidesKey: EnvironmentKey {
   static var defaultValue: EdgeInsets { .init() }
 }
 
-public extension EnvironmentValues {
-  /// The `EdgeInsets` corresponding to the layout margins of the nearest ``WithLayoutMargins``'s content.
-  var layoutMarginsInsets: EdgeInsets {
+extension EnvironmentValues {
+  /// The `EdgeInsets` corresponding to the layout margins of the nearest
+  /// ``WithLayoutMargins``'s content.
+  public var layoutMarginsInsets: EdgeInsets {
     get { self[LayoutMarginsGuidesKey.self] }
     set { self[LayoutMarginsGuidesKey.self] = newValue }
   }
 
-  /// The `EdgeInsets` corresponding to the readable content of the nearest ``WithLayoutMargins``'s content.
-  var readableContentInsets: EdgeInsets {
+  /// The `EdgeInsets` corresponding to the readable content of the nearest
+  /// ``WithLayoutMargins``'s content.
+  public var readableContentInsets: EdgeInsets {
     get { self[ReadableContentGuidesKey.self] }
     set { self[ReadableContentGuidesKey.self] = newValue }
   }
 }
 
-struct LayoutGuidesModifier: ViewModifier {
+struct LayoutGuidesModifier: ViewModifier, Animatable {
   @State var layoutMarginsInsets: EdgeInsets = .init()
   @State var readableContentInsets: EdgeInsets = .init()
 
@@ -157,7 +161,7 @@ struct LayoutGuidesModifier: ViewModifier {
     final class LayoutGuidesView: UIView {
       var onLayoutMarginsGuideChange: (EdgeInsets) -> Void = { _ in }
       var onReadableContentGuideChange: (EdgeInsets) -> Void = { _ in }
-
+      
       override func layoutMarginsDidChange() {
         super.layoutMarginsDidChange()
         updateLayoutMargins()
@@ -168,7 +172,17 @@ struct LayoutGuidesModifier: ViewModifier {
         super.layoutSubviews()
         updateReadableContent()
       }
-      
+
+      // `layoutSubviews` doesn't seem late enough to retrieve an up-to-date `readableContentGuide`
+      // in some cases, like when toggling the sidebar in a NavigationSplitView on iPad.
+      // It seems that observing the `frame` is enough to fix this edge case, but a better
+      // heuristic would be preferable.
+      override var frame: CGRect {
+        didSet {
+          self.updateReadableContent()
+        }
+      }
+
       override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if traitCollection.layoutDirection != previousTraitCollection?.layoutDirection {
@@ -216,66 +230,77 @@ struct LayoutGuidesModifier: ViewModifier {
 #endif
 
 #if DEBUG
-struct Cell: View {
-  var value: String
-  var body: some View {
-    ZStack {
-      Text(value)
-        .frame(maxWidth: .infinity)
-    }
-    .background(Color.blue.opacity(0.3))
-    .border(Color.blue) // This view fits in readable content width
-    .fitToReadableContentWidth()
-    .border(Color.red) // This view is unconstrained
-  }
-}
-
-struct ListTest: View {
-  var body: some View {
-    List {
-      ForEach(0 ..< 30) {
-        Cell(value: "\($0)")
+  struct Cell: View {
+    var value: String
+    var body: some View {
+      ZStack {
+        Text(value)
+          .frame(maxWidth: .infinity)
       }
+      .background(Color.blue.opacity(0.3))
+      .border(Color.blue)  // This view fits in readable content width
+      .fitToReadableContentWidth()
+      .border(Color.red)  // This view is unconstrained
     }
   }
-}
 
-struct ScrollViewTest: View {
-  var body: some View {
-    ScrollView {
-      VStack(spacing: 0) {
-        ForEach(0 ..< 30) {
+  struct ListTest: View {
+    var body: some View {
+      List {
+        ForEach(0..<30) {
           Cell(value: "\($0)")
         }
       }
     }
   }
-}
 
-struct SwiftUILayoutGuides_Previews: PreviewProvider {
-  static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
-  where Content: View {
-    VStack(alignment: .leading) {
-      Text(title)
-        .font(Font.system(size: 20, weight: .bold))
-        .padding()
-      content()
-    }
-    .border(Color.primary, width: 2)
-  }
-  
-  static var previews: some View {
-    VStack(spacing: 0) {
-      sample("ScrollView") { ScrollViewTest() }
-      sample("List.plain") { ListTest().listStyle(.plain) }
-      #if os(iOS) || os(tvOS)
-      sample("List.grouped") { ListTest().listStyle(.grouped) }
-      if #available(iOS 14.0, *) {
-      sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
+  struct ScrollViewTest: View {
+    var body: some View {
+      ScrollView {
+        VStack(spacing: 0) {
+          ForEach(0..<30) {
+            Cell(value: "\($0)")
+          }
+        }
       }
-      #endif
     }
-   .previewDevice("iPad Pro (11-inch) (3rd generation)")
   }
-}
+
+  @available(iOS 16.0, *)
+  struct SwiftUILayoutGuides_Previews: PreviewProvider {
+    static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
+    where Content: View {
+      VStack(alignment: .leading) {
+        Text(title)
+          .font(Font.system(size: 20, weight: .bold))
+          .padding()
+        content()
+      }
+      .border(Color.primary, width: 2)
+    }
+
+    static var previews: some View {
+      NavigationSplitView {
+        VStack(spacing: 0) {
+          sample("ScrollView") { ScrollViewTest() }
+          sample("List.plain") { ListTest().listStyle(.plain) }
+          #if os(iOS) || os(tvOS)
+            sample("List.grouped") { ListTest().listStyle(.grouped) }
+            sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
+          #endif
+        }
+      } detail: {
+        VStack(spacing: 0) {
+          sample("ScrollView") { ScrollViewTest() }
+          sample("List.plain") { ListTest().listStyle(.plain) }
+          #if os(iOS) || os(tvOS)
+            sample("List.grouped") { ListTest().listStyle(.grouped) }
+            sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
+          #endif
+        }
+      }
+      .previewInterfaceOrientation(.landscapeRight)
+      .previewDevice(PreviewDevice(rawValue: "iPad Pro (11-inch) (4th generation)"))
+    }
+  }
 #endif
