@@ -120,7 +120,7 @@ extension EnvironmentValues {
   }
 }
 
-struct LayoutGuidesModifier: ViewModifier, Animatable {
+struct LayoutGuidesModifier: ViewModifier {
   @State var layoutMarginsInsets: EdgeInsets = .init()
   @State var readableContentInsets: EdgeInsets = .init()
 
