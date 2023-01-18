@@ -266,6 +266,7 @@ struct LayoutGuidesModifier: ViewModifier {
     }
   }
 
+#if os(iOS)
   @available(iOS 16.0, *)
   struct SwiftUILayoutGuides_Previews: PreviewProvider {
     static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
@@ -303,4 +304,5 @@ struct LayoutGuidesModifier: ViewModifier {
       .previewDevice(PreviewDevice(rawValue: "iPad Pro (11-inch) (4th generation)"))
     }
   }
+#endif
 #endif
