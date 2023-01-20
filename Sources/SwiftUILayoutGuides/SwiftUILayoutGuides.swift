@@ -133,7 +133,7 @@ extension View {
   /// the readable content width.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   /// - Note: This modifier is equivalent to wrapping the view inside a
-  /// ``FitReadableContentWidth`` view.
+  /// ``FitLayoutMarginsWidth`` view.
   public func fitToLayoutMarginsWidth(alignment: Alignment = .center) -> some View {
     FitLayoutMarginsWidth(alignment: alignment) { self }
   }
