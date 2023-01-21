@@ -39,6 +39,18 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 ///
 /// - Note: This modifier is equivalent to calling ``.fitToReadableContentWidth()`` on
 /// the content view.
+@available(
+  iOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
+@available(
+  macOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
+@available(
+  tvOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
+@available(
+  watchOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
@@ -58,20 +70,7 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
   }
 
   public var body: some View {
-    InsetContent(alignment: alignment, content: content)
-      .measureLayoutMargins()
-  }
-
-  private struct InsetContent: View {
-    let alignment: Alignment
-    let content: Content
-    @Environment(\.readableContentInsets) var readableContentInsets
-    var body: some View {
-      content
-        .frame(maxWidth: .infinity, alignment: alignment)
-        .padding(.leading, readableContentInsets.leading)
-        .padding(.trailing, readableContentInsets.trailing)
-    }
+    self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .readableContent))
   }
 }
 
@@ -79,6 +78,16 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 ///
 /// - Note: This modifier is equivalent to calling ``.fitToLayoutMarginsWidth()`` on
 /// the content view.
+@available(iOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead.")
+@available(
+  macOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
+)
+@available(
+  tvOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
+)
+@available(
+  watchOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
+)
 public struct FitLayoutMarginsWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
@@ -98,15 +107,45 @@ public struct FitLayoutMarginsWidth<Content>: View where Content: View {
   }
 
   public var body: some View {
-    InsetContent(alignment: alignment, content: content)
-      .measureLayoutMargins()
+    self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .layoutMargins))
+  }
+}
+
+internal struct FitLayoutGuidesWidth: ViewModifier {
+  enum Kind {
+    case layoutMargins
+    case readableContent
   }
 
-  private struct InsetContent: View {
+  let alignment: Alignment
+  let kind: Kind
+
+  func body(content: Content) -> some View {
+    switch kind {
+    case .layoutMargins:
+      content.modifier(InsetLayoutMargins(alignment: alignment))
+        .measureLayoutMargins()
+    case .readableContent:
+      content.modifier(InsetReadableContent(alignment: alignment))
+        .measureLayoutMargins()
+    }
+  }
+
+  private struct InsetReadableContent: ViewModifier {
     let alignment: Alignment
-    let content: Content
+    @Environment(\.readableContentInsets) var readableContentInsets
+    func body(content: Content) -> some View {
+      content
+        .frame(maxWidth: .infinity, alignment: alignment)
+        .padding(.leading, readableContentInsets.leading)
+        .padding(.trailing, readableContentInsets.trailing)
+    }
+  }
+
+  private struct InsetLayoutMargins: ViewModifier {
+    let alignment: Alignment
     @Environment(\.layoutMarginsInsets) var layoutMarginsInsets
-    var body: some View {
+    func body(content: Content) -> some View {
       content
         .frame(maxWidth: .infinity, alignment: alignment)
         .padding(.leading, layoutMarginsInsets.leading)
@@ -124,9 +163,9 @@ extension View {
   /// - Note: This modifier is equivalent to wrapping the view inside a
   /// ``FitReadableContentWidth`` view.
   public func fitToReadableContentWidth(alignment: Alignment = .center) -> some View {
-    FitReadableContentWidth(alignment: alignment) { self }
+    self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .readableContent))
   }
-    
+
   /// Use this modifier to make the view fit the layout margins guide width.
   ///
   /// - Parameter alignment: The `Alignment` to use when the view is smaller than
@@ -135,16 +174,14 @@ extension View {
   /// - Note: This modifier is equivalent to wrapping the view inside a
   /// ``FitLayoutMarginsWidth`` view.
   public func fitToLayoutMarginsWidth(alignment: Alignment = .center) -> some View {
-    FitLayoutMarginsWidth(alignment: alignment) { self }
+    self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .layoutMargins))
   }
-
-
   /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets``
   /// for the target view.
   ///
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   public func measureLayoutMargins() -> some View {
-    modifier(LayoutGuidesModifier())
+    self.modifier(LayoutGuidesModifier())
   }
 }
 
@@ -182,11 +219,13 @@ struct LayoutGuidesModifier: ViewModifier {
       .environment(\.layoutMarginsInsets, layoutMarginsInsets)
       .environment(\.readableContentInsets, readableContentInsets)
       .background(
-        LayoutGuides(onLayoutMarginsGuideChange: {
-          layoutMarginsInsets = $0
-        }, onReadableContentGuideChange: {
-          readableContentInsets = $0
-        })
+        LayoutGuides(
+          onLayoutMarginsGuideChange: {
+            layoutMarginsInsets = $0
+          },
+          onReadableContentGuideChange: {
+            readableContentInsets = $0
+          })
       )
     #endif
   }
@@ -213,7 +252,7 @@ struct LayoutGuidesModifier: ViewModifier {
     final class LayoutGuidesView: UIView {
       var onLayoutMarginsGuideChange: (EdgeInsets) -> Void = { _ in }
       var onReadableContentGuideChange: (EdgeInsets) -> Void = { _ in }
-      
+
       override func layoutMarginsDidChange() {
         super.layoutMarginsDidChange()
         updateLayoutMargins()
@@ -318,43 +357,43 @@ struct LayoutGuidesModifier: ViewModifier {
     }
   }
 
-#if os(iOS)
-  @available(iOS 16.0, *)
-  struct SwiftUILayoutGuides_Previews: PreviewProvider {
-    static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
-    where Content: View {
-      VStack(alignment: .leading) {
-        Text(title)
-          .font(Font.system(size: 20, weight: .bold))
-          .padding()
-        content()
+  #if os(iOS)
+    @available(iOS 16.0, *)
+    struct SwiftUILayoutGuides_Previews: PreviewProvider {
+      static func sample<Content>(_ title: String, _ content: () -> Content) -> some View
+      where Content: View {
+        VStack(alignment: .leading) {
+          Text(title)
+            .font(Font.system(size: 20, weight: .bold))
+            .padding()
+          content()
+        }
+        .border(Color.primary, width: 2)
       }
-      .border(Color.primary, width: 2)
-    }
 
-    static var previews: some View {
-      NavigationSplitView {
-        VStack(spacing: 0) {
-          sample("ScrollView") { ScrollViewTest() }
-          sample("List.plain") { ListTest().listStyle(.plain) }
-          #if os(iOS) || os(tvOS)
-            sample("List.grouped") { ListTest().listStyle(.grouped) }
-            sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
-          #endif
+      static var previews: some View {
+        NavigationSplitView {
+          VStack(spacing: 0) {
+            sample("ScrollView") { ScrollViewTest() }
+            sample("List.plain") { ListTest().listStyle(.plain) }
+            #if os(iOS) || os(tvOS)
+              sample("List.grouped") { ListTest().listStyle(.grouped) }
+              sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
+            #endif
+          }
+        } detail: {
+          VStack(spacing: 0) {
+            sample("ScrollView") { ScrollViewTest() }
+            sample("List.plain") { ListTest().listStyle(.plain) }
+            #if os(iOS) || os(tvOS)
+              sample("List.grouped") { ListTest().listStyle(.grouped) }
+              sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
+            #endif
+          }
         }
-      } detail: {
-        VStack(spacing: 0) {
-          sample("ScrollView") { ScrollViewTest() }
-          sample("List.plain") { ListTest().listStyle(.plain) }
-          #if os(iOS) || os(tvOS)
-            sample("List.grouped") { ListTest().listStyle(.grouped) }
-            sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
-          #endif
-        }
+        .previewInterfaceOrientation(.landscapeRight)
+        .previewDevice(PreviewDevice(rawValue: "iPad Pro (11-inch) (4th generation)"))
       }
-      .previewInterfaceOrientation(.landscapeRight)
-      .previewDevice(PreviewDevice(rawValue: "iPad Pro (11-inch) (4th generation)"))
     }
-  }
-#endif
+  #endif
 #endif
