@@ -51,6 +51,9 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 @available(
   watchOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
 )
+@available(
+  visionOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
@@ -87,6 +90,9 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 )
 @available(
   watchOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
+)
+@available(
+  visionOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
 )
 public struct FitLayoutMarginsWidth<Content>: View where Content: View {
   let alignment: Alignment
@@ -215,7 +221,7 @@ struct LayoutGuidesModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-    #if os(iOS) || os(tvOS)
+    #if canImport(UIKit)
       .environment(\.layoutMarginsInsets, layoutMarginsInsets)
       .environment(\.readableContentInsets, readableContentInsets)
       .background(
@@ -231,7 +237,7 @@ struct LayoutGuidesModifier: ViewModifier {
   }
 }
 
-#if os(iOS) || os(tvOS)
+#if canImport(UIKit)
   import UIKit
   struct LayoutGuides: UIViewRepresentable {
     let onLayoutMarginsGuideChange: (EdgeInsets) -> Void
@@ -376,7 +382,7 @@ struct LayoutGuidesModifier: ViewModifier {
           VStack(spacing: 0) {
             sample("ScrollView") { ScrollViewTest() }
             sample("List.plain") { ListTest().listStyle(.plain) }
-            #if os(iOS) || os(tvOS)
+            #if canImport(UIKit)
               sample("List.grouped") { ListTest().listStyle(.grouped) }
               sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
             #endif
@@ -385,7 +391,7 @@ struct LayoutGuidesModifier: ViewModifier {
           VStack(spacing: 0) {
             sample("ScrollView") { ScrollViewTest() }
             sample("List.plain") { ListTest().listStyle(.plain) }
-            #if os(iOS) || os(tvOS)
+            #if canImport(UIKit)
               sample("List.grouped") { ListTest().listStyle(.grouped) }
               sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
             #endif
