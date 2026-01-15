@@ -166,9 +166,9 @@ internal struct ScrollContentFitLayoutGuidesWidth: ViewModifier {
     case layoutMargins
     case readableContent
   }
-  
+
   let kind: Kind
-  
+
   func body(content: Content) -> some View {
     switch kind {
     case .layoutMargins:
@@ -179,7 +179,7 @@ internal struct ScrollContentFitLayoutGuidesWidth: ViewModifier {
         .measureLayoutMargins()
     }
   }
-  
+
   private struct InsetReadableContent: ViewModifier {
     @Environment(\.readableContentInsets) var readableContentInsets
     func body(content: Content) -> some View {
@@ -188,7 +188,7 @@ internal struct ScrollContentFitLayoutGuidesWidth: ViewModifier {
         .contentMargins(.trailing, readableContentInsets.trailing, for: .scrollContent)
     }
   }
-  
+
   private struct InsetLayoutMargins: ViewModifier {
     @Environment(\.layoutMarginsInsets) var layoutMarginsInsets
     func body(content: Content) -> some View {
@@ -221,35 +221,29 @@ extension View {
   public func fitToLayoutMarginsWidth(alignment: Alignment = .center) -> some View {
     self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .layoutMargins))
   }
-  
-  /// Use this modifier to make scroll view content fit the readable content width.
-  ///
-  /// This modifier uses the modern `contentMargins(_:for:)` API on iOS 17+ and other
-  /// supported platforms, which is the recommended approach for scroll views.
-  /// On older platforms, it falls back to the frame-based approach.
+
+  /// Use this modifier to make scroll view content fit the readable content width using
+  /// the `contentMargins(_:for:)` API.
   ///
   /// - Note: Prefer this modifier over ``fitToReadableContentWidth(alignment:)`` when
-  /// working with scroll views like `ScrollView`, `List`, or `TextEditor`.
+  /// working with scroll views or `List` views.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
   public func scrollContentFitToReadableContentWidth() -> some View {
     self.modifier(ScrollContentFitLayoutGuidesWidth(kind: .readableContent))
   }
-  
-  /// Use this modifier to make scroll view content fit the layout margins guide width.
-  ///
-  /// This modifier uses the modern `contentMargins(_:for:)` API on iOS 17+ and other
-  /// supported platforms, which is the recommended approach for scroll views.
-  /// On older platforms, it falls back to the frame-based approach.
+
+  /// Use this modifier to make scroll view content fit the layout margins guide width using
+  /// the `contentMargins(_:for:)` API.
   ///
   /// - Note: Prefer this modifier over ``fitToLayoutMarginsWidth(alignment:)`` when
-  /// working with scroll views like `ScrollView`, `List`, or `TextEditor`.
+  /// working with scroll views or `List` views.
   /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
   @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
   public func scrollContentFitToLayoutMarginsWidth() -> some View {
     self.modifier(ScrollContentFitLayoutGuidesWidth(kind: .layoutMargins))
   }
-  
+
   /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets``
   /// for the target view.
   ///
