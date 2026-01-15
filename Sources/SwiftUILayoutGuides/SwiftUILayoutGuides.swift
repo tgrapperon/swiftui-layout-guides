@@ -170,31 +170,23 @@ internal struct ScrollContentFitLayoutGuidesWidth: ViewModifier {
   let kind: Kind
 
   func body(content: Content) -> some View {
-    switch kind {
-    case .layoutMargins:
-      content.modifier(InsetLayoutMargins())
-        .measureLayoutMargins()
-    case .readableContent:
-      content.modifier(InsetReadableContent())
-        .measureLayoutMargins()
-    }
+    content.modifier(InsetContent(kind: kind))
+      .measureLayoutMargins()
   }
 
-  private struct InsetReadableContent: ViewModifier {
-    @Environment(\.readableContentInsets) var readableContentInsets
-    func body(content: Content) -> some View {
-      content
-        .contentMargins(.leading, readableContentInsets.leading, for: .scrollContent)
-        .contentMargins(.trailing, readableContentInsets.trailing, for: .scrollContent)
-    }
-  }
-
-  private struct InsetLayoutMargins: ViewModifier {
+  private struct InsetContent: ViewModifier {
+    let kind: Kind
     @Environment(\.layoutMarginsInsets) var layoutMarginsInsets
+    @Environment(\.readableContentInsets) var readableContentInsets
+
+    private var insets: EdgeInsets {
+      kind == .readableContent ? readableContentInsets : layoutMarginsInsets
+    }
+
     func body(content: Content) -> some View {
       content
-        .contentMargins(.leading, layoutMarginsInsets.leading, for: .scrollContent)
-        .contentMargins(.trailing, layoutMarginsInsets.trailing, for: .scrollContent)
+        .contentMargins(.leading, insets.leading, for: .scrollContent)
+        .contentMargins(.trailing, insets.trailing, for: .scrollContent)
     }
   }
 }
