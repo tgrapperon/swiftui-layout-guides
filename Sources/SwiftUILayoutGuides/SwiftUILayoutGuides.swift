@@ -51,6 +51,9 @@ public struct WithLayoutMargins<Content>: View where Content: View {
 @available(
   watchOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
 )
+@available(
+  visionOS, deprecated: 9999.0, message: "Use the `.fitToReadableContentWidth` modifier instead."
+)
 public struct FitReadableContentWidth<Content>: View where Content: View {
   let alignment: Alignment
   let content: Content
@@ -87,6 +90,9 @@ public struct FitReadableContentWidth<Content>: View where Content: View {
 )
 @available(
   watchOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
+)
+@available(
+  visionOS, deprecated: 9999.0, message: "Use the `.fitToLayoutMarginsWidth` modifier instead."
 )
 public struct FitLayoutMarginsWidth<Content>: View where Content: View {
   let alignment: Alignment
@@ -154,6 +160,37 @@ internal struct FitLayoutGuidesWidth: ViewModifier {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
+internal struct ScrollContentFitLayoutGuidesWidth: ViewModifier {
+  enum Kind {
+    case layoutMargins
+    case readableContent
+  }
+
+  let kind: Kind
+
+  func body(content: Content) -> some View {
+    content.modifier(InsetContent(kind: kind))
+      .measureLayoutMargins()
+  }
+
+  private struct InsetContent: ViewModifier {
+    let kind: Kind
+    @Environment(\.layoutMarginsInsets) var layoutMarginsInsets
+    @Environment(\.readableContentInsets) var readableContentInsets
+
+    private var insets: EdgeInsets {
+      kind == .readableContent ? readableContentInsets : layoutMarginsInsets
+    }
+
+    func body(content: Content) -> some View {
+      content
+        .contentMargins(.leading, insets.leading, for: .scrollContent)
+        .contentMargins(.trailing, insets.trailing, for: .scrollContent)
+    }
+  }
+}
+
 extension View {
   /// Use this modifier to make the view fit the readable content width.
   ///
@@ -176,6 +213,29 @@ extension View {
   public func fitToLayoutMarginsWidth(alignment: Alignment = .center) -> some View {
     self.modifier(FitLayoutGuidesWidth(alignment: alignment, kind: .layoutMargins))
   }
+
+  /// Use this modifier to make scroll view content fit the readable content width using
+  /// the `contentMargins(_:for:)` API.
+  ///
+  /// - Note: Prefer this modifier over ``fitToReadableContentWidth(alignment:)`` when
+  /// working with scroll views or `List` views.
+  /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
+  public func scrollContentFitToReadableContentWidth() -> some View {
+    self.modifier(ScrollContentFitLayoutGuidesWidth(kind: .readableContent))
+  }
+
+  /// Use this modifier to make scroll view content fit the layout margins guide width using
+  /// the `contentMargins(_:for:)` API.
+  ///
+  /// - Note: Prefer this modifier over ``fitToLayoutMarginsWidth(alignment:)`` when
+  /// working with scroll views or `List` views.
+  /// - Note: You don't have to wrap this view inside a ``WithLayoutMargins`` view.
+  @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
+  public func scrollContentFitToLayoutMarginsWidth() -> some View {
+    self.modifier(ScrollContentFitLayoutGuidesWidth(kind: .layoutMargins))
+  }
+
   /// Use this modifier to populate the ``layoutMarginsInsets`` and ``readableContentInsets``
   /// for the target view.
   ///
@@ -215,7 +275,7 @@ struct LayoutGuidesModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-    #if os(iOS) || os(tvOS)
+    #if canImport(UIKit)
       .environment(\.layoutMarginsInsets, layoutMarginsInsets)
       .environment(\.readableContentInsets, readableContentInsets)
       .background(
@@ -231,7 +291,7 @@ struct LayoutGuidesModifier: ViewModifier {
   }
 }
 
-#if os(iOS) || os(tvOS)
+#if canImport(UIKit)
   import UIKit
   struct LayoutGuides: UIViewRepresentable {
     let onLayoutMarginsGuideChange: (EdgeInsets) -> Void
@@ -376,7 +436,7 @@ struct LayoutGuidesModifier: ViewModifier {
           VStack(spacing: 0) {
             sample("ScrollView") { ScrollViewTest() }
             sample("List.plain") { ListTest().listStyle(.plain) }
-            #if os(iOS) || os(tvOS)
+            #if canImport(UIKit)
               sample("List.grouped") { ListTest().listStyle(.grouped) }
               sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
             #endif
@@ -385,7 +445,7 @@ struct LayoutGuidesModifier: ViewModifier {
           VStack(spacing: 0) {
             sample("ScrollView") { ScrollViewTest() }
             sample("List.plain") { ListTest().listStyle(.plain) }
-            #if os(iOS) || os(tvOS)
+            #if canImport(UIKit)
               sample("List.grouped") { ListTest().listStyle(.grouped) }
               sample("List.insetGrouped") { ListTest().listStyle(.insetGrouped) }
             #endif
